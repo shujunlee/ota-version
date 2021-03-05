@@ -10,7 +10,7 @@ os.chdir('/Users/ucast/Desktop/PScript')
 print(os.getcwd())
 
 #csv file variable
-data_url = 'devices_20210222_1127.csv'
+data_url = 'devices_20210304_1219.csv'
 df = pd.read_csv(data_url, usecols = ['mdt_id','vehicle_id', 'list_of_app', 'rpt_time'])
 
 #Manually filter last report by latest date and remove the duplicated entries that has an older date
@@ -27,10 +27,10 @@ df.drop_duplicates(subset ="vehicle_id",
                      keep = "first", inplace = True)
 
 #import vehicle master list
-#df_v = pd.read_csv("SMRT-master.csv", index_col = 'vehicle_id')
+df_v = pd.read_csv("SMRT-master.csv", index_col = 'vehicle_id')
 
 #import test plate list
-df_v = pd.read_csv("23testplate.csv", index_col = 'vehicle_id')
+#df_v = pd.read_csv("25testplate-final.csv", index_col = 'vehicle_id')
 
 df_smrt = pd.merge(df,
                      df_v,
