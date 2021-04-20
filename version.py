@@ -10,7 +10,7 @@ os.chdir('/Users/ucast/Desktop/PScript')
 print(os.getcwd())
 
 #csv file variable
-data_url = 'devices_20210304_1219.csv'
+data_url = 'devices_20210421_0000.csv'
 df = pd.read_csv(data_url, usecols = ['mdt_id','vehicle_id', 'list_of_app', 'rpt_time'])
 
 #Manually filter last report by latest date and remove the duplicated entries that has an older date
@@ -36,65 +36,124 @@ df_smrt = pd.merge(df,
                      df_v,
                      on ='vehicle_id',
                      how ='right')
-#print(df_smrt)
-#hired & on v28
-v28h = df_smrt[(df_smrt['list_of_app'].str.contains('com.ucast.blackbox:1.0.1028.201216_RC', na=False))
-        & (df_smrt['Hired Status'] == 'Hired')]
 
-print('hiredOn28 '  + str(len(v28h)))
+df_not34 = df_smrt[~(df_smrt['list_of_app'].str.contains('com.ucast.blackbox:1.0.1034', na=True))]
+df_v34 = df_smrt[(df_smrt['list_of_app'].str.contains('com.ucast.blackbox:1.0.1034', na=True))]
+
+df_notOta20 = df_smrt[~(df_smrt['list_of_app'].str.contains('com.ste.itsd.fms.agilmdmv2:1.0.20', na=False))]
+
+df_filtered = df_smrt
+
+#texAPI filters regardless of dataframe
+v34 = df_filtered[(df_filtered['list_of_app'].str.contains('com.ucast.blackbox:1.0.1034', na=False))]
+v32 = df_filtered[(df_filtered['list_of_app'].str.contains('com.ucast.blackbox:1.0.1032', na=False))]
+v28 = df_filtered[(df_filtered['list_of_app'].str.contains('com.ucast.blackbox:1.0.1028', na=False))]
+v27 = df_filtered[(df_filtered['list_of_app'].str.contains('com.ucast.blackbox:1.0.1027', na=False))]
+v21 = df_filtered[(df_filtered['list_of_app'].str.contains('com.ucast.blackbox:1.0.1021', na=False))]
+v17 = df_filtered[(df_filtered['list_of_app'].str.contains('com.ucast.blackbox:1.0.1017', na=False))]
+v14 = df_filtered[(df_filtered['list_of_app'].str.contains('com.ucast.blackbox:1.0.1014', na=False))]
+noV = df_smrt['list_of_app'].isnull().sum()
 
 
-#hired & not on v28
-nv28h = df_smrt[~(df_smrt['list_of_app'].str.contains('com.ucast.blackbox:1.0.1028.201216_RC', na=False))
-        & (df_smrt['Hired Status'] == 'Hired')]
-print('nv28h qty: ' + str(len(nv28h)))
+blackboxSummary = {'v34': v34['vehicle_id'].count(),
+                   'v32': v32['vehicle_id'].count(),
+                   'v28': v28['vehicle_id'].count(),
+                   'v27': v27['vehicle_id'].count(),
+                   'v21': v21['vehicle_id'].count(),
+                   'v17': v17['vehicle_id'].count(),
+                   'v14': v14['vehicle_id'].count(),
+                   'NA' : df_smrt['list_of_app'].isnull().sum(),
+                   'Total': df_smrt['list_of_app'].notna().sum() + df_smrt['list_of_app'].isnull().sum()
+}
+Summary = pd.DataFrame.from_dict(blackboxSummary, orient='index', columns=['UCAST Blackbox'])
+print(Summary)
 
-#hired & not on v28 & on OTA v15
-nv28h15 = df_smrt[(df_smrt['list_of_app'].str.contains('com.ucast.blackbox:1.0.1028.201216_RC', na=False))
-        & (df_smrt['Hired Status'] == 'Hired')]
-print('nv28hOTA15 qty: ' + str(len(nv28h15)))
+#ota filters regardless of dataframe
+ota20only = df_filtered[(df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdmv2:1.0.20', na=False)) &
+                 ~(df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdm:1', na=False))]
+ota16only = df_filtered[(df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdmv2:1.0.16', na=False)) &
+                 ~(df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdm:1', na=False))]
+ota15only = df_filtered[(df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdmv2:1.0.15', na=False)) &
+                 ~(df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdm:1', na=False))]
+ota2 = df_filtered[(df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdmv2:1', na=False)) &
+                 (df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdm:1', na=False))]
+ota11only = df_filtered[~(df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdmv2:1', na=False)) &
+                 (df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdm:1.0.11', na=False))]
+ota8only = df_filtered[~(df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdmv2:1', na=False)) &
+                 (df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdm:1.0.8', na=False))]
+ota7only = df_filtered[~(df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdmv2:1', na=False)) &
+                 (df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdm:1.0.7', na=False))]
 
-#hired & not on v28 and has 2 ota client
-nv28h2ota = df_smrt[~(df_smrt['list_of_app'].str.contains('com.ucast.blackbox:1.0.1028.201216_RC', na=False))
-        & (df_smrt['Hired Status'] == 'Hired')
-        & (df_smrt['list_of_app'].str.contains('com.ste.itsd.fms.agilmdmv2:1.0.15', na=False))
-        & (df_smrt['list_of_app'].str.contains('com.ste.itsd.fms.agilmdm:1', na=False))
-       ]
-print('nv28h2ota qty: ' + str(len(nv28h2ota)))
+ota1615 = df_filtered[((df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdmv2:1.0.16', na=True)) |
+                      (df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdmv2:1.0.15', na=True))) &
+                 ~(df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdm:1', na=True))]
 
-#hired & not on v28 and ota client v11
-nv28h11 = df_smrt[~(df_smrt['list_of_app'].str.contains('com.ucast.blackbox:1.0.1028.201216_RC', na=False))
-        & (df_smrt['Hired Status'] == 'Hired')
-        & ~(df_smrt['list_of_app'].str.contains('com.ste.itsd.fms.agilmdmv2:1.0.15', na=False))
-        & (df_smrt['list_of_app'].str.contains('com.ste.itsd.fms.agilmdm:1.0.11', na=False))
-       ]
-print('nv28h11 qty:' + str(len(nv28h11)))
+ota20onlyWithLT = df_filtered[(df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdmv2:1.0.20', na=False)) &
+                 ~(df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdm:1', na=False)) &
+                 (df_filtered['list_of_app'].str.contains('com.grab.tex:21.13.0-93c35a1', na=False))]
 
-#hired & not on v28 and ota client v8
-nv28h8 = df_smrt[~(df_smrt['list_of_app'].str.contains('com.ucast.blackbox:1.0.1028.201216_RC', na=False))
-        & (df_smrt['Hired Status'] == 'Hired')
-        & ~(df_smrt['list_of_app'].str.contains('com.ste.itsd.fms.agilmdmv2:1.0.15', na=False))
-        & (df_smrt['list_of_app'].str.contains('com.ste.itsd.fms.agilmdm:1.0.8', na=False))
-       ]
-print('nv28h8 qty: ' + str(len(nv28h8)))
+ota20onlyNOTLT = df_filtered[(df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdmv2:1.0.20', na=False)) &
+                 ~(df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdm:1', na=False)) &
+                 ~(df_filtered['list_of_app'].str.contains('com.grab.tex:21.13.0-93c35a1', na=False))]
 
-#hired & not on v28 and ota client v7
-nv28h7 = df_smrt[~(df_smrt['list_of_app'].str.contains('com.ucast.blackbox:1.0.1028.201216_RC', na=False))
-        & (df_smrt['Hired Status'] == 'Hired')
-        & ~(df_smrt['list_of_app'].str.contains('com.ste.itsd.fms.agilmdmv2:1.0.15', na=False))
-        & (df_smrt['list_of_app'].str.contains('com.ste.itsd.fms.agilmdm:1.0.7', na=False))
-       ]
-print('nv28h7 qty: ' + str(len(nv28h7)))
+OTAsummary={'ota20only':ota20only['vehicle_id'].count(),
+         'ota16only':ota16only['vehicle_id'].count(),
+         'ota15only':ota15only['vehicle_id'].count(),
+         'ota2':ota2['vehicle_id'].count(),
+         'ota11only':ota11only['vehicle_id'].count(),
+         'ota8only':ota8only['vehicle_id'].count(),
+         'ota7only':ota7only['vehicle_id'].count(),
+         'NA' : df_smrt['list_of_app'].isnull().sum(),
+         'Total': df_smrt['list_of_app'].notna().sum() + df_smrt['list_of_app'].isnull().sum()
+        }
 
-#hired & on v28
-v27h = df_smrt[(df_smrt['list_of_app'].str.contains('com.ucast.blackbox:1.0.1027', na=False))
-        & (df_smrt['Hired Status'] == 'Hired')]
+OTASummary = pd.DataFrame.from_dict(OTAsummary, orient='index', columns=['OTA Client'])
+print(OTASummary)
 
-#print(v27h)
+TEXsummary={'OLD 20':ota20onlyNOTLT['vehicle_id'].count(),
+         'NEW 21.13':ota20onlyWithLT['vehicle_id'].count(),
+         'Total': df_smrt['list_of_app'].notna().sum() + df_smrt['list_of_app'].isnull().sum()
+        }
+TEXSummary = pd.DataFrame.from_dict(TEXsummary, orient='index', columns=['TEX'])
+print(TEXSummary)
+#fileuploader regardless of dataframe
+fileupv9not34 = df_filtered[(df_filtered['list_of_app'].str.contains('com.ucast.blackbox.fileupload:1.0.1009', na=False)) &
+                 ~(df_filtered['list_of_app'].str.contains('com.ucast.blackbox:1.0.1034', na=False))]
+fileupv1  = df_filtered[(df_filtered['list_of_app'].str.contains('com.ucast.blackbox.fileupload:1.0.1001', na=False))]
 
+fileupv6  = df_filtered[(df_filtered['list_of_app'].str.contains('com.ucast.blackbox.fileupload:1.0.1006', na=False))]
+notfileupv9 = df_filtered[~(df_filtered['list_of_app'].str.contains('com.ucast.blackbox.fileupload', na=False))
+                 ]
+fileupv9 = df_filtered[(df_filtered['list_of_app'].str.contains('com.ucast.blackbox.fileupload:1.0.1009', na=False))
+                 ]
+fileuploader = {'fileupv9not34':fileupv9not34['vehicle_id'].count(),
+                'fileupv1':fileupv1['vehicle_id'].count(),
+                'fileupv6':fileupv6['vehicle_id'].count(),
+                'notfileupv9':notfileupv9['vehicle_id'].count(),
+                'fileupv9':fileupv9['vehicle_id'].count(),
+                'NA' : df_smrt['list_of_app'].isnull().sum(),
+                'Total':df_smrt['list_of_app'].notna().sum() + df_smrt['list_of_app'].isnull().sum()
+}
+fileuploaderSummary = pd.DataFrame.from_dict(fileuploader, orient='index', columns=['FileUploader'])
+print(fileuploaderSummary)
+print(notfileupv9)
 #for export CSV to have timestamp
 dateTimeObj = datetime.now()
 timestampStr = dateTimeObj.strftime("%d%b%Y %H%M%S")
-print(timestampStr)
+date = dateTimeObj.strftime("%d %b %Y")
+print(date)
 
-df_smrt.to_csv(str(timestampStr)+'.csv', index=False)
+#print(ota7only)
+print(ota11only)
+search = "SHB469B"
+# print(df_smrt[(df_smrt['vehicle_id'].str.contains(search, na=True))])
+# with pd.ExcelWriter('SMRT MCU Version ' + str(date) + '.xlsx') as writer:
+#     df_smrt.to_excel(writer, sheet_name='Full',index=None,index_label=None)
+#     df_v34.to_excel(writer, sheet_name='v34',index=None,index_label=None)
+#     df_not34.to_excel(writer, sheet_name='not34',index=None,index_label=None)
+#     df_notOta20.to_excel(writer, sheet_name='notOTA20',index=None,index_label=None)
+#     Summary.to_excel(writer, sheet_name='Summary')
+#     OTASummary.to_excel(writer, sheet_name='OTASummary')
+#     ota20onlyWithLT.to_excel(writer, sheet_name='tex v21',index=None,index_label=None)
+
+ota11only.to_csv(str(timestampStr)+'.csv', index=False)
