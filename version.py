@@ -10,7 +10,7 @@ os.chdir('/Users/ucast/Desktop/PScript')
 print(os.getcwd())
 
 #csv file variable
-data_url = 'devices_20210421_0000.csv'
+data_url = 'devices_20210728_1148.csv'
 df = pd.read_csv(data_url, usecols = ['mdt_id','vehicle_id', 'list_of_app', 'rpt_time'])
 
 #Manually filter last report by latest date and remove the duplicated entries that has an older date
@@ -40,7 +40,8 @@ df_smrt = pd.merge(df,
 df_not34 = df_smrt[~(df_smrt['list_of_app'].str.contains('com.ucast.blackbox:1.0.1034', na=True))]
 df_v34 = df_smrt[(df_smrt['list_of_app'].str.contains('com.ucast.blackbox:1.0.1034', na=True))]
 
-df_notOta20 = df_smrt[~(df_smrt['list_of_app'].str.contains('com.ste.itsd.fms.agilmdmv2:1.0.20', na=False))]
+df_notOta20 = df_smrt[~(df_smrt['list_of_app'].str.contains('com.ste.itsd.fms.agilmdmv2:1.0.20', na=False)) | ((df_smrt['list_of_app'].str.contains('com.ste.itsd.fms.agilmdmv2:1', na=False)) &
+                 (df_smrt['list_of_app'].str.contains('com.ste.itsd.fms.agilmdm:1', na=False)))]
 
 df_filtered = df_smrt
 
@@ -96,6 +97,8 @@ ota20onlyNOTLT = df_filtered[(df_filtered['list_of_app'].str.contains('com.ste.i
                  ~(df_filtered['list_of_app'].str.contains('com.ste.itsd.fms.agilmdm:1', na=False)) &
                  ~(df_filtered['list_of_app'].str.contains('com.grab.tex:21.13.0-93c35a1', na=False))]
 
+texNOTLT = df_filtered[~(df_filtered['list_of_app'].str.contains('com.grab.tex:21.13.0-93c35a1', na=False))]
+
 OTAsummary={'ota20only':ota20only['vehicle_id'].count(),
          'ota16only':ota16only['vehicle_id'].count(),
          'ota15only':ota15only['vehicle_id'].count(),
@@ -135,8 +138,8 @@ fileuploader = {'fileupv9not34':fileupv9not34['vehicle_id'].count(),
                 'Total':df_smrt['list_of_app'].notna().sum() + df_smrt['list_of_app'].isnull().sum()
 }
 fileuploaderSummary = pd.DataFrame.from_dict(fileuploader, orient='index', columns=['FileUploader'])
-print(fileuploaderSummary)
-print(notfileupv9)
+#print(fileuploaderSummary)
+#print(notfileupv9)
 #for export CSV to have timestamp
 dateTimeObj = datetime.now()
 timestampStr = dateTimeObj.strftime("%d%b%Y %H%M%S")
@@ -144,16 +147,18 @@ date = dateTimeObj.strftime("%d %b %Y")
 print(date)
 
 #print(ota7only)
-print(ota11only)
-search = "SHB469B"
-# print(df_smrt[(df_smrt['vehicle_id'].str.contains(search, na=True))])
-# with pd.ExcelWriter('SMRT MCU Version ' + str(date) + '.xlsx') as writer:
-#     df_smrt.to_excel(writer, sheet_name='Full',index=None,index_label=None)
-#     df_v34.to_excel(writer, sheet_name='v34',index=None,index_label=None)
-#     df_not34.to_excel(writer, sheet_name='not34',index=None,index_label=None)
-#     df_notOta20.to_excel(writer, sheet_name='notOTA20',index=None,index_label=None)
-#     Summary.to_excel(writer, sheet_name='Summary')
-#     OTASummary.to_excel(writer, sheet_name='OTASummary')
-#     ota20onlyWithLT.to_excel(writer, sheet_name='tex v21',index=None,index_label=None)
+print(ota20onlyNOTLT)
+search = "SHC4800X"
+print(df_smrt[(df_smrt['vehicle_id'].str.contains(search, na=True))]['list_of_app'])
 
-ota11only.to_csv(str(timestampStr)+'.csv', index=False)
+with pd.ExcelWriter('SMRT MCU Version ' + str(date) + '.xlsx') as writer:
+    df_smrt.to_excel(writer, sheet_name='Full',index=None,index_label=None)
+    df_v34.to_excel(writer, sheet_name='v34',index=None,index_label=None)
+    df_not34.to_excel(writer, sheet_name='not34',index=None,index_label=None)
+    df_notOta20.to_excel(writer, sheet_name='notOTA20',index=None,index_label=None)
+    Summary.to_excel(writer, sheet_name='Summary')
+    OTASummary.to_excel(writer, sheet_name='OTASummary')
+    texNOTLT.to_excel(writer, sheet_name='tex v21',index=None,index_label=None)
+
+# ota20onlyWithLT.to_csv(str(timestampStr)+'.csv', index=False)
+#ota2.to_csv(str(timestampStr)+'.csv', index=False)

@@ -10,7 +10,7 @@ os.chdir('/Users/ucast/Desktop/PScript')
 print(os.getcwd())
 #############################clean data####################
 #csv file variable
-data_url = 'devices_20210420_0920.csv'
+data_url = 'devices_20210604_0954.csv'
 df = pd.read_csv(data_url, usecols = ['mdt_id','vehicle_id', 'list_of_app', 'rpt_time'])
 
 #Manually filter last report by latest date and remove the duplicated entries that has an older date
@@ -28,7 +28,7 @@ df.drop_duplicates(subset ="vehicle_id",
 
 #############################filter base on selected list####################
 #import vehicle master list
-df_v = pd.read_csv("/Users/ucast/Desktop/LiveOTA/batch4.csv", index_col = 'vehicle_id')
+df_v = pd.read_csv("/Users/ucast/Desktop/ota25.csv", index_col = 'vehicle_id')
 #ongoing = pd.read_csv("/Users/ucast/Desktop/LiveOTA/ongoing.csv", squeeze = True)
 print(df_v)
 
@@ -51,9 +51,6 @@ df_not34 = df_smrt[~(df_smrt['list_of_app'].str.contains('com.ucast.blackbox:1.0
 dateTimeObj = datetime.now()
 timestampStr = dateTimeObj.strftime("%d%b%Y %H%M%S")
 print(timestampStr)
-
-print(df_not34)
-
 
 
 df_smrt.to_csv(str(timestampStr)+'.csv', index=False)
